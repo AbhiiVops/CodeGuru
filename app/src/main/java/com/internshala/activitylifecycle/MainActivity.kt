@@ -18,6 +18,7 @@ import com.auth0.android.Auth0
 import com.auth0.android.authentication.AuthenticationException
 import com.auth0.android.callback.Callback
 import com.auth0.android.provider.WebAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 import java.net.CookieHandler
 
 
@@ -45,6 +46,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var btnExploreGoLang: Button
 
     private var currentLayoutId = R.layout.activity_main_dashboard
+
+    private lateinit var auth : FirebaseAuth
 
 
 
@@ -126,6 +129,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+
         etMessage = findViewById(R.id.etMessage)
         btnSend = findViewById(R.id.btnSend)
         btnLogout= findViewById(R.id.btnLogout)
@@ -135,14 +139,14 @@ class MainActivity : AppCompatActivity() {
 
 
 
+        auth = FirebaseAuth.getInstance()
+
         btnLogout.setOnClickListener {
 
-           logout()
 
-            val intent = Intent(this@MainActivity,LoginActivity::class.java)
-            startActivity(intent)
-           // sharedPreferences.edit().clear().apply()
-          //  finish()
+           auth.signOut()
+            startActivity(Intent(this , LoginActivity::class.java))
+
 
         }
 
@@ -171,56 +175,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun logout() {
-        WebAuthProvider.logout(account)
-            .withScheme(getString(R.string.com_auth0_scheme))
-            .start(
-                this,
-                object : Callback<Void?, AuthenticationException> {
-                    override fun onSuccess(result: Void?) {
-                        // The user has been logged out!
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Successfully logged out!",
-                            Toast.LENGTH_SHORT
-                        ).show()
 
-                        CookieManager.getInstance().removeAllCookies(null)
-                        CookieManager.getInstance().flush()
-                        webView.clearCache(true)
-
-                        // Send logout request using Volley
-                        val queue = Volley.newRequestQueue(this@MainActivity)
-                        val logoutUrl = "https://codeguru.us.auth0.com/v2/logout?federated"
-                        val stringRequest = StringRequest(
-                            Request.Method.GET, logoutUrl,
-                            { response ->
-                                // Handle the response
-                                Toast.makeText(this@MainActivity, "Successfully logged out!", Toast.LENGTH_SHORT).show()
-                                webView.loadUrl("app://codeguru.us.auth0.com/android/com.internshala.activitylifecycle/callback")
-                            },
-                            { error ->
-                                // Handle the error
-                                Toast.makeText(this@MainActivity, "Couldn't Logout!", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                        queue.add(stringRequest)
-                    }
-
-                    override fun onFailure(error: AuthenticationException) {
-                        Toast.makeText(
-                            this@MainActivity,
-                            "Couldn't Logout!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            )
-
-          fun onBackPressed() {
-            // set the content view to activity_main_dashboard layout
-            setContentView(R.layout.activity_main_dashboard)
-        }
     }
 
 
@@ -229,5 +184,5 @@ class MainActivity : AppCompatActivity() {
 
 
 
-}
+
 

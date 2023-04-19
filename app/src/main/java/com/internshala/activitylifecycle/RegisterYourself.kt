@@ -1,21 +1,58 @@
 package com.internshala.activitylifecycle
 
+import android.app.Activity
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.internshala.activitylifecycle.databinding.ActivityLoginBinding
+import com.internshala.activitylifecycle.databinding.ActivityMainBinding
 
-class RegisterYourself : AppCompatActivity() {
+class  RegisterYourself : AppCompatActivity() {
 
-    lateinit var register_button : Button
+    lateinit var binding: ActivityLoginBinding
+    lateinit var  firebaseAuth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.register_yourself)
+        setContentView(R.layout.activity_login)
 
-        register_button = findViewById(R.id.register_button)
 
-        register_button.setOnClickListener {
-            Toast.makeText(this@RegisterYourself,"You Clicked on Register yourself",Toast.LENGTH_SHORT).show()
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        firebaseAuth = FirebaseAuth.getInstance()
+
+        binding.textView.setOnClickListener {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+        }
+        binding.button.setOnClickListener {
+            val email = binding.emailEt.text.toString()
+            val pass = binding.passET.text.toString()
+            val confirmPass = binding.confirmPassEt.text.toString()
+
+            if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
+                if (pass == confirmPass) {
+
+                    firebaseAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
+                        if (it.isSuccessful) {
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
+                        } else {
+                            Toast.makeText(this, it.exception.toString(), Toast.LENGTH_SHORT).show()
+
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Password is not matching", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Empty Fields Are not Allowed !!", Toast.LENGTH_SHORT).show()
+
+            }
         }
     }
 }
